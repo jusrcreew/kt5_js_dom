@@ -1,0 +1,869 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Банковская карта</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #07111f;
+        --panel: rgba(255, 255, 255, 0.1);
+        --panel-2: rgba(255, 255, 255, 0.15);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.7);
+        --border: rgba(255, 255, 255, 0.16);
+        --accent: #d6b25e;
+        --accent-blue: #6ee7f9;
+        --danger: #fb7185;
+        --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        --radius: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Arial, "Noto Sans", "Liberation Sans", sans-serif;
+        background: radial-gradient(
+            900px 420px at 18% 0%,
+            rgba(214, 178, 94, 0.18),
+            transparent 58%
+          ),
+          radial-gradient(
+            900px 500px at 92% 18%,
+            rgba(110, 231, 249, 0.14),
+            transparent 58%
+          ),
+          linear-gradient(135deg, #07111f 0%, #0d1b2f 48%, #07111f 100%);
+        color: var(--text);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image: linear-gradient(
+            rgba(255, 255, 255, 0.035) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.035) 1px,
+            transparent 1px
+          );
+        background-size: 42px 42px;
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent);
+      }
+
+      .page {
+        position: relative;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px 18px 60px;
+      }
+
+      .header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      @media (max-width: 720px) {
+        .header {
+          align-items: start;
+          flex-direction: column;
+        }
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 28px;
+        height: 2px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      .title {
+        font-size: clamp(30px, 5vw, 46px);
+        margin: 0 0 6px;
+        letter-spacing: -0.8px;
+      }
+
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.35;
+        max-width: 640px;
+      }
+
+      .security-badge {
+        flex: 0 0 auto;
+        display: grid;
+        gap: 4px;
+        min-width: 190px;
+        padding: 12px 14px;
+        border: 1px solid rgba(214, 178, 94, 0.28);
+        border-radius: 16px;
+        background: rgba(214, 178, 94, 0.08);
+      }
+
+      .security-badge strong {
+        font-size: 13px;
+      }
+
+      .security-badge span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 18px;
+        align-items: start;
+      }
+
+      @media (max-width: 920px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card-form,
+      .preview,
+      .table-section {
+        background: linear-gradient(
+          180deg,
+          var(--panel),
+          rgba(255, 255, 255, 0.05)
+        );
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+
+      .card-form {
+        padding: 16px;
+      }
+
+      .form {
+        display: grid;
+        gap: 12px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+
+      .label {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 11px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(0, 0, 0, 0.18);
+        color: var(--text);
+        outline: none;
+        transition: border-color 160ms ease, box-shadow 160ms ease,
+          background 160ms ease;
+      }
+
+      input::placeholder {
+        color: rgba(255, 255, 255, 0.45);
+      }
+
+      select option {
+        color: #07111f;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: rgba(214, 178, 94, 0.68);
+        background: rgba(0, 0, 0, 0.26);
+        box-shadow: 0 0 0 4px rgba(214, 178, 94, 0.14);
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .hint {
+        min-height: 16px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.55);
+      }
+
+      .hint.error {
+        color: var(--danger);
+      }
+
+      .btn {
+        cursor: pointer;
+        padding: 11px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(214, 178, 94, 0.48);
+        background: linear-gradient(
+          180deg,
+          rgba(214, 178, 94, 0.24),
+          rgba(214, 178, 94, 0.1)
+        );
+        color: var(--text);
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        transition: transform 160ms ease, border-color 160ms ease,
+          background 160ms ease;
+      }
+
+      .btn:hover {
+        border-color: rgba(214, 178, 94, 0.78);
+        background: linear-gradient(
+          180deg,
+          rgba(214, 178, 94, 0.34),
+          rgba(214, 178, 94, 0.15)
+        );
+      }
+
+      .btn:active {
+        transform: translateY(1px);
+      }
+
+      .preview {
+        padding: 16px;
+      }
+
+      .card {
+        width: 100%;
+        aspect-ratio: 1.58 / 1;
+        border-radius: 22px;
+        padding: 18px;
+        background: radial-gradient(
+            800px 200px at 0% 0%,
+            rgba(214, 178, 94, 0.24),
+            transparent 55%
+          ),
+          radial-gradient(
+            500px 260px at 100% 100%,
+            rgba(110, 231, 249, 0.2),
+            transparent 60%
+          ),
+          linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.12),
+            rgba(255, 255, 255, 0.04)
+          );
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.42);
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        gap: 12px;
+      }
+
+      .card-top {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 30px;
+        min-width: 78px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(0, 0, 0, 0.22);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        font-weight: 800;
+        font-size: 12px;
+        user-select: none;
+      }
+
+      .logo.bank {
+        background: rgba(214, 178, 94, 0.12);
+        border-color: rgba(214, 178, 94, 0.36);
+      }
+
+      .logo.scheme {
+        background: rgba(168, 85, 247, 0.12);
+        border-color: rgba(168, 85, 247, 0.28);
+      }
+
+      .logo.scheme.is-visa {
+        background: rgba(34, 211, 238, 0.18);
+        border-color: rgba(34, 211, 238, 0.42);
+      }
+
+      .logo.scheme.is-mc {
+        background: rgba(251, 146, 60, 0.16);
+        border-color: rgba(251, 146, 60, 0.38);
+      }
+
+      .logo.scheme.is-mir {
+        background: rgba(74, 222, 128, 0.16);
+        border-color: rgba(74, 222, 128, 0.38);
+      }
+
+      .card-number {
+        font-size: clamp(17px, 2vw, 21px);
+        letter-spacing: 2px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        align-self: center;
+      }
+
+      .chip {
+        width: 46px;
+        height: 34px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #f7dd91, #b8892c);
+        box-shadow: inset 0 0 0 1px rgba(72, 47, 7, 0.28);
+        position: relative;
+      }
+
+      .chip::before,
+      .chip::after {
+        content: "";
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        height: 1px;
+        background: rgba(72, 47, 7, 0.35);
+      }
+
+      .chip::before {
+        top: 11px;
+      }
+
+      .chip::after {
+        bottom: 11px;
+      }
+
+      .card-bottom {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 10px;
+        padding-top: 4px;
+      }
+
+      .card-holder {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.88);
+        max-width: 70%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .card-expiry {
+        font-weight: 800;
+        letter-spacing: 0.6px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.88);
+      }
+
+      .trust-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .trust-item {
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .trust-item strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 13px;
+      }
+
+      .trust-item span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 520px) {
+        .trust-strip {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .preview-note {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.35;
+      }
+
+      .table-section {
+        margin-top: 18px;
+        padding: 16px;
+      }
+
+      .table-title {
+        margin: 0 0 12px;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+      }
+
+      .table-wrap {
+        overflow: auto;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+      }
+
+      .table th,
+      .table td {
+        padding: 12px 12px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 13px;
+      }
+
+      .table th {
+        position: sticky;
+        top: 0;
+        background: rgba(10, 14, 30, 0.85);
+        backdrop-filter: blur(8px);
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 700;
+      }
+
+      .table tr:hover td {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .empty-row td {
+        color: rgba(255, 255, 255, 0.6);
+        text-align: center;
+        padding: 18px 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <div>
+          <div class="eyebrow">SecureBank Online</div>
+          <h1 class="title">Данные банковской карты</h1>
+          <p class="subtitle">
+            Заполните форму: справа сразу обновляется премиальное превью карты.
+            После отправки данные добавятся в таблицу ниже, а форма и превью
+            очистятся.
+          </p>
+        </div>
+        <div class="security-badge" aria-label="Статус безопасности">
+          <strong>Защищенная форма</strong>
+          <span>Проверка номера, срока действия и платежной системы</span>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="card-form" aria-label="Форма карты">
+          <form id="cardForm" class="form" novalidate>
+            <div class="field">
+              <label for="bank" class="label">Название банка</label>
+              <input id="bank" name="bank" type="text" maxlength="32" required />
+              <div class="hint" data-error-for="bank"></div>
+            </div>
+
+            <div class="field">
+              <label for="scheme" class="label">Платежная система</label>
+              <select id="scheme" name="scheme" required>
+                <option value="" selected disabled>Выберите...</option>
+                <option value="visa">VISA</option>
+                <option value="mastercard">Mastercard</option>
+                <option value="mir">МИР</option>
+              </select>
+              <div class="hint" data-error-for="scheme"></div>
+            </div>
+
+            <div class="field">
+              <label for="number" class="label">Номер карты (16 цифр)</label>
+              <input
+                id="number"
+                name="number"
+                type="text"
+                inputmode="numeric"
+                maxlength="19"
+                placeholder="0000 0000 0000 0000"
+                required
+              />
+              <div class="hint" data-error-for="number"></div>
+            </div>
+
+            <div class="field">
+              <label for="holder" class="label">Держатель карты</label>
+              <input id="holder" name="holder" type="text" maxlength="26" required />
+              <div class="hint" data-error-for="holder"></div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label for="expMonth" class="label">Месяц</label>
+                <select id="expMonth" name="expMonth" required>
+                  <option value="" selected disabled>MM</option>
+                  <option value="01">01</option>
+                  <option value="02">02</option>
+                  <option value="03">03</option>
+                  <option value="04">04</option>
+                  <option value="05">05</option>
+                  <option value="06">06</option>
+                  <option value="07">07</option>
+                  <option value="08">08</option>
+                  <option value="09">09</option>
+                  <option value="10">10</option>
+                  <option value="11">11</option>
+                  <option value="12">12</option>
+                </select>
+                <div class="hint" data-error-for="expMonth"></div>
+              </div>
+
+              <div class="field">
+                <label for="expYear" class="label">Год</label>
+                <select id="expYear" name="expYear" required>
+                  <option value="" selected disabled>YYYY</option>
+                </select>
+                <div class="hint" data-error-for="expYear"></div>
+              </div>
+            </div>
+
+            <button class="btn" type="submit">Добавить в таблицу</button>
+          </form>
+        </section>
+
+        <aside class="preview" aria-label="Превью карты">
+          <div class="card">
+            <div class="card-top">
+              <div class="logo bank" id="previewBankLogo">
+                <span class="logo-text" id="previewBankText">банк</span>
+              </div>
+              <div class="logo scheme" id="previewSchemeLogo">
+                <span class="logo-text" id="previewSchemeText">система</span>
+              </div>
+            </div>
+
+            <div class="chip" aria-hidden="true"></div>
+
+            <div class="card-number" id="previewNumber">0000 0000 0000 0000</div>
+
+            <div class="card-bottom">
+              <div class="card-holder" id="previewHolder">ИМЯ ДЕРЖАТЕЛЯ</div>
+              <div class="card-expiry" id="previewExpiry">MM/YYYY</div>
+            </div>
+          </div>
+          <div class="trust-strip" aria-label="Преимущества">
+            <div class="trust-item">
+              <strong>Контроль</strong>
+              <span>Мгновенное превью</span>
+            </div>
+            <div class="trust-item">
+              <strong>Приватность</strong>
+              <span>Номер маскируется</span>
+            </div>
+            <div class="trust-item">
+              <strong>Срок</strong>
+              <span>Год указан полностью</span>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <section class="table-section" aria-label="Таблица карт">
+        <h2 class="table-title">Сохраненные карты</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Банк</th>
+                <th>Система</th>
+                <th>Номер</th>
+                <th>Держатель</th>
+                <th>Срок</th>
+              </tr>
+            </thead>
+            <tbody id="cardsTbody">
+              <tr class="empty-row" id="emptyRow">
+                <td colspan="5">Пока нет добавленных карт.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      function $(id) {
+        const el = document.getElementById(id);
+        if (!el) throw new Error(`Missing element: #${id}`);
+        return el;
+      }
+
+      function digitsOnly(value) {
+        return String(value || "").replace(/\D+/g, "");
+      }
+
+      function normalizeHolderName(value) {
+        return String(value || "")
+          .trim()
+          .replace(/\s+/g, " ")
+          .toUpperCase()
+          .slice(0, 26);
+      }
+
+      function schemeLabel(value) {
+        if (value === "visa") return "VISA";
+        if (value === "mastercard") return "MASTERCARD";
+        if (value === "mir") return "MIR";
+        return "";
+      }
+
+      function schemeThemeClass(value) {
+        if (value === "visa") return "is-visa";
+        if (value === "mastercard") return "is-mc";
+        if (value === "mir") return "is-mir";
+        return "";
+      }
+
+      function clearErrors() {
+        document.querySelectorAll("[data-error-for]").forEach((el) => {
+          el.textContent = "";
+          el.classList.remove("error");
+        });
+      }
+
+      function setError(name, message) {
+        const el = document.querySelector(`[data-error-for="${name}"]`);
+        if (!el) return;
+        el.textContent = message;
+        el.classList.add("error");
+      }
+
+      function getCurrentFormData(form) {
+        const fd = new FormData(form);
+        const bank = String(fd.get("bank") || "").trim().slice(0, 32);
+        const scheme = String(fd.get("scheme") || "");
+        const numberDigits = digitsOnly(fd.get("number") || "").slice(0, 16);
+        const holder = normalizeHolderName(fd.get("holder") || "");
+        const expMonth = String(fd.get("expMonth") || "");
+        const expYear = String(fd.get("expYear") || "");
+
+        return { bank, scheme, numberDigits, holder, expMonth, expYear };
+      }
+
+      function validate(data) {
+        const errors = {};
+        if (!data.bank) errors.bank = "Введите название банка.";
+        if (!data.scheme) errors.scheme = "Выберите платежную систему.";
+        if (data.numberDigits.length !== 16) errors.number = "Нужно ровно 16 цифр.";
+        if (!data.holder) errors.holder = "Введите имя держателя.";
+        if (!data.expMonth) errors.expMonth = "Выберите месяц.";
+        if (!data.expYear) errors.expYear = "Выберите год.";
+
+        if (data.expMonth && data.expYear) {
+          const now = new Date();
+          const currentMonth = now.getMonth() + 1;
+          const currentYear = now.getFullYear();
+          const mm = parseInt(data.expMonth, 10);
+          const yyyy = parseInt(data.expYear, 10);
+          if (Number.isFinite(mm) && Number.isFinite(yyyy)) {
+            const isExpired =
+              yyyy < currentYear ||
+              (yyyy === currentYear && mm < currentMonth);
+            if (isExpired) errors.expMonth = "Срок действия уже истек.";
+          }
+        }
+
+        return errors;
+      }
+
+      function setPreview(data) {
+        $("previewBankText").textContent = data.bank ? data.bank : "банк";
+
+        const label = schemeLabel(data.scheme);
+        $("previewSchemeText").textContent = label ? label : "система";
+
+        const bankLogo = $("previewBankLogo");
+        const schemeLogo = $("previewSchemeLogo");
+
+        bankLogo.style.opacity = data.bank ? "1" : "0.72";
+        schemeLogo.style.opacity = data.scheme ? "1" : "0.72";
+
+        schemeLogo.classList.remove("is-visa", "is-mc", "is-mir");
+        const theme = schemeThemeClass(data.scheme);
+        if (theme) schemeLogo.classList.add(theme);
+
+        const prettyNumber = data.numberDigits
+          ? data.numberDigits.replace(/(\d{4})(?=\d)/g, "$1 ")
+          : "0000 0000 0000 0000";
+        $("previewNumber").textContent = prettyNumber.padEnd(19, "0");
+
+        $("previewHolder").textContent = data.holder
+          ? data.holder
+          : "ИМЯ ДЕРЖАТЕЛЯ";
+
+        const expiry =
+          data.expMonth && data.expYear
+            ? `${data.expMonth}/${data.expYear}`
+            : "MM/YYYY";
+        $("previewExpiry").textContent = expiry;
+      }
+
+      function clearPreview() {
+        setPreview({
+          bank: "",
+          scheme: "",
+          numberDigits: "",
+          holder: "",
+          expMonth: "",
+          expYear: "",
+        });
+      }
+
+      function maskCardNumber(rawDigits) {
+        const d = digitsOnly(rawDigits).slice(0, 16);
+        if (d.length !== 16) return "";
+        const last4 = d.slice(-4);
+        return `**** **** **** ${last4}`;
+      }
+
+      function addRow(data) {
+        const tbody = $("cardsTbody");
+        const emptyRow = document.getElementById("emptyRow");
+        if (emptyRow) emptyRow.remove();
+
+        const tr = document.createElement("tr");
+
+        const tdBank = document.createElement("td");
+        tdBank.textContent = data.bank;
+
+        const tdScheme = document.createElement("td");
+        tdScheme.textContent = schemeLabel(data.scheme) || data.scheme;
+
+        const tdNumber = document.createElement("td");
+        tdNumber.textContent = maskCardNumber(data.numberDigits) || data.numberDigits;
+
+        const tdHolder = document.createElement("td");
+        tdHolder.textContent = data.holder;
+
+        const tdExpiry = document.createElement("td");
+        tdExpiry.textContent = `${data.expMonth}/${data.expYear}`;
+
+        tr.append(tdBank, tdScheme, tdNumber, tdHolder, tdExpiry);
+        tbody.appendChild(tr);
+      }
+
+      function populateYears() {
+        const el = $("expYear");
+        const now = new Date();
+        const start = now.getFullYear();
+
+        for (let i = 0; i <= 12; i++) {
+          const year = start + i;
+          const opt = document.createElement("option");
+          opt.value = String(year);
+          opt.textContent = String(year);
+          el.appendChild(opt);
+        }
+      }
+
+      function wireNumberFormatting(form) {
+        const input = form.elements.number;
+        if (!(input instanceof HTMLInputElement)) return;
+
+        input.addEventListener("input", () => {
+          const digits = digitsOnly(input.value).slice(0, 16);
+          input.value = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+        });
+      }
+
+      function main() {
+        const form = $("cardForm");
+        populateYears();
+
+        const updatePreview = () => setPreview(getCurrentFormData(form));
+        wireNumberFormatting(form);
+
+        form.addEventListener("input", updatePreview);
+        form.addEventListener("change", updatePreview);
+
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          clearErrors();
+
+          const data = getCurrentFormData(form);
+          const errors = validate(data);
+
+          const keys = Object.keys(errors);
+          if (keys.length) {
+            keys.forEach((k) => setError(k, errors[k]));
+            return;
+          }
+
+          addRow(data);
+          form.reset();
+          clearPreview();
+          clearErrors();
+        });
+
+        clearPreview();
+      }
+
+      main();
+    </script>
+  </body>
+</html>
+
